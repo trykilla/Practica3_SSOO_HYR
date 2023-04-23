@@ -1,10 +1,10 @@
 /************************************************************************************
  * Proyecto: Práctica 2 - Sistemas Operativos II                                    *
- * Nombre del programa: my_lib.h                                                    *                                                       
+ * Nombre del programa: my_lib.h                                                    *
  * Autores: Héctor Alberca Sánchez-Quintanar y Rubén Crespo Calcerrada              *
  * Fecha: 8/04/2023                                                                 *
  * Propósito: archivo en el cual se encuentran las distintas funciones              *
- * que son genéricas y pueden ser utilizadas durante distintas prácticas.           *                                    
+ * que son genéricas y pueden ser utilizadas durante distintas prácticas.           *
  ************************************************************************************/
 
 #include <iostream>
@@ -17,6 +17,7 @@ int count_lines_in_file(std::string file_name);
 void my_to_upper(std::string &word);
 void my_to_lower(std::string &word);
 bool test_each_symbol(std::string word, std::string current_word);
+
 
 /**
  * Verifica que los argumentos introducidos por el usuario son correctos.
@@ -35,6 +36,8 @@ void parse_args(int argc)
     }
 }
 
+
+
 /**
  * Cuenta el número de líneas que tiene un fichero.
  *
@@ -49,7 +52,7 @@ int count_lines_in_file(std::string file_name)
     std::ifstream file(file_name);
     int lines_num = 0;
 
-    //Se lee el archivo línea a línea y se cuenta el número de líneas hasta el final. 
+    // Se lee el archivo línea a línea y se cuenta el número de líneas hasta el final.
     if (file.is_open())
     {
         while (!file.eof())
@@ -73,7 +76,7 @@ int count_lines_in_file(std::string file_name)
 
 bool test_each_symbol(std::string word, std::string current_word)
 {
-    //Se compara la palabra con la palabra actual y con la palabra actual con un punto, una coma o un punto y coma al final.
+    // Se compara la palabra con la palabra actual y con la palabra actual con un punto, una coma o un punto y coma al final.
     bool flag = false;
     if (current_word == word || current_word == word + "." || current_word == word + "," || current_word == word + ";")
     {

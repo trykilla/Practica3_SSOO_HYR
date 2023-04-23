@@ -3,49 +3,65 @@
 #include <string>
 #include <queue>
 
+class Client
+{
+protected:
+    int id;
+    std::string word;
 
-class Cliente {
-    protected:
-        int id;
+public:
+    Client(int id, std::string word)
+    {
+        this->word = word;
+        this->id = id;
+    }
 
-    public:
-        Cliente(int id) {
-            this->id = id;
-        }
+    int getId() const
+    {
+        return id;
+    }
 
-        int getId() const {
-            return id;
-        }
+    std::string getWord() const
+    {
+        return word;
+    }
 };
 
-class ClienteGratuito : public Cliente {
-    public:
-        ClienteGratuito(int id) : Cliente(id) {
-            // Constructor por defecto
-        }
+class FreeClient : public Client
+{
+public:
+    FreeClient(int id, std::string word) : Client(id, word)
+    {
+    }
 };
 
-class ClientePremium : public Cliente {
-    private:
-        double saldo;
+class PremiumClient : public Client
+{
+private:
+    double balance;
 
-    public:
-        ClientePremium(int id, double saldo) : Cliente(id) {
-            this->saldo = saldo;
-        }
+public:
+    PremiumClient(int id,std::string word, double balance) : Client(id, word)
+    {
+        this->balance = balance;
+    }
 
-        double getSaldo() const {
-            return saldo;
-        }
+    double get_balance() const
+    {
+        return balance;
+    }
 
-        void setSaldo(double saldo) {
-            this->saldo = saldo;
-        }
+    void set_balance(double balance)
+    {
+        this->balance = balance;
+    }
 };
 
-class ClientePremiumIlimitado : public ClientePremium {
-    public:
-        ClientePremiumIlimitado(int id) : ClientePremium(id, 0) {
-            // Constructor por defecto
-        }
+class ExtraPremiumClient : public Client
+{
+public:
+    ExtraPremiumClient(int id, std::string word) : Client(id, word)
+    {
+        // Constructor por defecto
+    }
 };
