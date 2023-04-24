@@ -12,6 +12,7 @@
 #include <thread>
 #include <string>
 #include <queue>
+#include <mutex>
 
 #ifndef THREAD_STRUCT_H
 #define THREAD_STRUCT_H
@@ -37,4 +38,5 @@ struct thread_struct
 
 };
 
-#endif
+
+#endif.

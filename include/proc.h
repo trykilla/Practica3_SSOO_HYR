@@ -2,6 +2,14 @@
 #include <string>
 #include <cstdlib>
 #include <unistd.h>
+#include <mutex>
+
+struct request{
+    int id;
+    double saldo;
+    double cantidad;
+    std::mutex semaforo;
+};
 
 pid_t create_process(int type, std::string word)
 {
@@ -26,12 +34,27 @@ pid_t create_process(int type, std::string word)
             PremiumClient premium_client = PremiumClient(getpid(), word, 100);
             // Código para proceso cliente de type 2
             std::cout << "Premium client with id " << premium_client.getId() << " created." << std::endl;
+            std::cout << "Premium client word: " << premium_client.getWord() << std::endl;
+            std::cout << "Premium client balance: " << premium_client.get_balance() << std::endl;
+            if(premium_client.get_balance() == 0)
+            {
+                std::cout << "Premium client balance is 0. Paying..." << std::endl;
+                int payment = 100;
+                std::thread t1(pay_system, std::ref(premium_client));
+                t1.join();
+                std::cout << "Premium client balance: " << premium_client.get_balance() << std::endl;
+            }
+            else
+            {
+                std::cout << "Premium client balance: " << premium_client.get_balance() << std::endl;
+            }
         }
         else if (type == 2)
         {
             ExtraPremiumClient extra_premium_client = ExtraPremiumClient(getpid(), word);
             // Código para proceso cliente de type 3
             std::cout << "Extra premium client with id " << extra_premium_client.getId() << " created." << std::endl;
+            std::cout << "Extra premium client word: " << extra_premium_client.getWord() << std::endl;
         }
         else
         {
@@ -42,4 +65,9 @@ pid_t create_process(int type, std::string word)
     }
     
     return pid;
+}
+
+void pay_system(){
+
+
 }

@@ -20,13 +20,13 @@ int main()
 {
     srand(time(NULL));
     int type = 0;
+    
 
     create_client(type);
 
     std::cout << "Todos los procesos hijos creados." << std::endl;
     wait_process();
     std::cout << "Todos los procesos hijos terminados." << std::endl;
-
     return EXIT_SUCCESS;
 }
 
