@@ -2,6 +2,8 @@
 #include <thread>
 #include <string>
 #include <queue>
+#include <req_struct.h>
+#include <mutex>
 
 class Client
 {
@@ -39,11 +41,22 @@ class PremiumClient : public Client
 {
 private:
     double balance;
+    std::mutex client_mtx;
 
 public:
-    PremiumClient(int id,std::string word, double balance) : Client(id, word)
+    PremiumClient(int id, std::string word, double balance) : Client(id, word)
     {
         this->balance = balance;
+    }
+
+    void block_client()
+    {
+        client_mtx.lock();
+    }
+
+    void unblock_client()
+    {
+        client_mtx.unlock();
     }
 
     double get_balance() const

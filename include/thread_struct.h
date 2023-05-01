@@ -34,9 +34,8 @@ struct thread_struct
     int final_line;
     std::string word;
     std::queue<result_struct> result;
-    
 
 };
 
 
-#endif.
+#endif

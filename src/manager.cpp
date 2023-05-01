@@ -8,48 +8,49 @@
 #include <signal.h>
 #include <proc.h>
 
-void wait_process();
 void create_client(int type);
 
+void handler(int sig);
+void wake_up_searchers();
+
 #define MAX_CLIENTS 5
+#define MAX_SEARCHERS 4
 
 std::vector<std::string> dictionary = {"David", "Como", "llamo"};
-pid_t g_clients_pids[MAX_CLIENTS];
+std::vector<std::thread> v_searching_threads;
+std::vector<std::thread> v_client_threads;
 
 int main()
 {
     srand(time(NULL));
     int type = 0;
-    
+    signal(SIGINT, handler);
 
     create_client(type);
-
+    wake_up_searchers();
     std::cout << "Todos los procesos hijos creados." << std::endl;
-    wait_process();
     std::cout << "Todos los procesos hijos terminados." << std::endl;
     return EXIT_SUCCESS;
 }
 
-void kill_process()
+void wake_up_searchers()
 {
-    for (int i = 0; i < MAX_CLIENTS; i++)
+    
+    for (int i = 0; i < MAX_SEARCHERS; i++)
     {
-        std::cout << "Matar proceso hijo " << g_clients_pids[i] << std::endl;
-        if (kill(g_clients_pids[i], SIGKILL) == -1)
-        {
-            perror("Error al matar proceso hijo");
-            exit(EXIT_FAILURE);
-        }
+        v_searching_threads.push_back(std::thread(searcher_system));
+        std::this_thread::sleep_for(std::chrono::seconds(1));
     }
+
+    std::for_each(v_searching_threads.begin(), v_searching_threads.end(), [](std::thread &t) { t.join(); });
 }
 
-void wait_process()
+void handler(int sig)
 {
-    for (int i = 0; i < MAX_CLIENTS; i++)
-    {
-        std::cout << "Esperando a que termine el proceso hijo " << g_clients_pids[i] << std::endl;
-        waitpid(g_clients_pids[i], NULL, 0);
-    }
+    std::cout << "Señal SIGINT recibida, terminando procesos y liberando recursos..." << std::endl;
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+    
+    exit(EXIT_SUCCESS);
 }
 
 void create_client(int type)
@@ -57,23 +58,8 @@ void create_client(int type)
     for (int i = 0; i < MAX_CLIENTS; i++)
     {
         type = rand() % 3;
-        pid_t pid = fork();
-        if (pid == -1)
-        {
-            perror("Error al crear proceso hijo");
-            exit(EXIT_FAILURE);
-        }
-        else if (pid == 0)
-        {
-            std::string word = dictionary[rand() % dictionary.size()];
-            create_process(type, word);
-            exit(EXIT_SUCCESS);
-        }
-        else
-        {
-            // Código del proceso padre
-            g_clients_pids[i] = pid;
-            std::this_thread::sleep_for(std::chrono::seconds(1));
-        }
+        v_client_threads.push_back(std::thread(create_threads, i, type, dictionary[type]));
+        std::this_thread::sleep_for(std::chrono::seconds(1));
     }
+    std::for_each(v_client_threads.begin(), v_client_threads.end(), [](std::thread &t) { t.join(); });
 }

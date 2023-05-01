@@ -5,7 +5,7 @@ DIRSRC := src/
 
 #g++ archivo.cpp -o archivo -pthread -std=c++11
 
-CFLAGS := -I$(DIRHEA) -pthread -std=c++17
+CFLAGS := -I$(DIRHEA) -pthread -std=c++20
 CC := g++
 
 all : dirs manager  #pa, pb
