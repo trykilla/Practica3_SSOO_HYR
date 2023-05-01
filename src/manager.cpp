@@ -16,7 +16,7 @@ void handler(int sig);
 #define MAX_CLIENTS 5
 #define MAX_SEARCHERS 4
 
-std::vector<std::string> dictionary = {"polla_extrema"};
+std::vector<std::string> dictionary = {"non_found_word"};
 std::vector<std::thread> v_searching_threads;
 std::vector<std::thread> v_client_threads;
 
