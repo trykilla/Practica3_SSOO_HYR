@@ -14,22 +14,41 @@
 #include <my_lib.h>
 #include <shared_mutex>
 #include <thread_struct.h>
+#include <searcher.h>
+
+#define WORDS_NUM 4
+#define TH_NUM 4
 
 void pay_system(PremiumClient &client);
+void books_names();
+void print_results(FreeSearcher &searcher, std::string word);
 
 std::shared_mutex g_mtx;
 std::vector<thread_struct> v_thread_struct;
 std::queue<std::shared_ptr<request>> petitions_queue;
 std::condition_variable payment_cv;
+std::vector<std::thread> v_threads_books;
 
-void create_threads(int id,int type, std::string word)
+void create_threads(int id, int type, std::string word)
 {
-    
+
     if (type == 0)
     {
         FreeClient free_client = FreeClient(id, word);
         std::cout << "\033[1;36mFree client with id " << free_client.getId() << " created.\033[0m" << std::endl;
         std::cout << "\033[1;36mFree client word: " << free_client.getWord() << "\033[0m" << std::endl;
+        FreeSearcher f_searcher = FreeSearcher(id, word, WORDS_NUM);
+        std::cout << "\033[1;36mFree searcher with id " << f_searcher.getId() << " created.\033[0m" << std::endl;
+        for (int i = 0; i < books_names_vector.size() && f_searcher.word_counter <= WORDS_NUM; i++)
+        {
+            // std::cout << books_names_vector[i] << std::endl;
+            f_searcher.new_search(books_names_vector[i], word);
+
+            std::cout << "No hay palabra en ese libro" << std::endl;
+            std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+        }
+        std::cout << "\033[35mFree searcher with id " << f_searcher.getId() << " finished.\033[0m" << std::endl;
+        print_results(f_searcher, word);
     }
     else if (type == 1)
     {
@@ -57,69 +76,18 @@ void pay_system(PremiumClient &client)
     std::this_thread::sleep_for(std::chrono::seconds(1));
 }
 
-void searcher_system()
+void print_results(FreeSearcher &f_searcher, std::string word)
 {
-    std::cout << "Searcher system started." << std::endl;
-    std::this_thread::sleep_for(std::chrono::seconds(1));
-}
-
-void find_word_in_file(std::string file_name, int thread_v_pos)
-{
-    /*  Se inician y se crean las variables necesarias para la función. */
-    int current_line = 0;
-    std::fstream file;
-    std::string line;
-
-    /*  Se abre el fichero y se lee línea a línea.   */
-    file.open(file_name.c_str());
-
-    std::string current_word, previous_word;
-
-    // Se convierte la palabra a mayúsculas para que no haya problemas con las mayúsculas y minúsculas.
-    my_to_upper(v_thread_struct[thread_v_pos].word);
-
-    /* Se lee el fichero línea a línea hasta que se llega a la línea final del hilo que está realizando en este momento. */
-    while (getline(file, line) && current_line <= v_thread_struct[thread_v_pos].final_line)
+    for (int i = 0; i < TH_NUM; i++)
     {
-        result_struct result_str;
-        if (current_line >= v_thread_struct[thread_v_pos].initial_line)
+        // Se imprime el resultado de cada hilo hasta que el vector de resultados de cada hilo esté vacío.
+        while (!f_searcher.v_thread_struct[i].result.empty())
         {
-            /*  Cogemos una línea y la dividimos en las palabras que tiene, vamos comprobando palabra por palabra
-                si es la que estamos buscando. En caso de que sea esa, en la estructura result_struct guardamos
-                la palabra anterior, la posterior y la línea donde la hemos encontrado.   */
-
-            std::istringstream words_in_line(line);
-            std::string previous_word, current_word, next_word;
-            while (words_in_line >> current_word)
-            {
-                my_to_upper(current_word);
-                if (test_each_symbol(v_thread_struct[thread_v_pos].word, current_word))
-                {
-
-                    my_to_lower(previous_word);
-                    result_str.pre_word = previous_word;
-                    result_str.line = current_line + 1;
-
-                    if (words_in_line >> next_word)
-                    {
-
-                        result_str.post_word = next_word;
-                    }
-                    else
-                    {
-                        result_str.post_word = "[No hay palabra posterior]";
-                    }
-                    /*  Utilizamos el semáforo para añadir información en el vector de estructuras de hilos compartidos.
-                        De esta manera, no acceden varios semáforos al mismo tiempo al ser una sección crítica.*/
-                    std::unique_lock<std::shared_mutex> lock(g_mtx);
-                    v_thread_struct[thread_v_pos].result.push(result_str);
-                    lock.unlock();
-                }
-                previous_word = current_word;
-            }
+            std::cout << "[Hilo " << i << " inicio:" << f_searcher.v_thread_struct[i].initial_line << " - final: " << f_searcher.v_thread_struct[i].final_line << "]";
+            std::cout << " :: línea " << f_searcher.v_thread_struct[i].result.front().line << " :: ... " << f_searcher.v_thread_struct[i].result.front().pre_word << " "
+                      << "\x1B[3m" << word << "\x1B[0m"
+                      << " " << f_searcher.v_thread_struct[i].result.front().post_word << " ..." << std::endl;
+            f_searcher.v_thread_struct[i].result.pop();
         }
-        current_line++;
     }
-    // Se cierra el fichero.
-    file.close();
 }

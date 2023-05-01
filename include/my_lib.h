@@ -17,6 +17,9 @@ int count_lines_in_file(std::string file_name);
 void my_to_upper(std::string &word);
 void my_to_lower(std::string &word);
 bool test_each_symbol(std::string word, std::string current_word);
+void books_names();
+
+std::vector<std::string> books_names_vector;
 
 
 /**
@@ -78,7 +81,7 @@ bool test_each_symbol(std::string word, std::string current_word)
 {
     // Se compara la palabra con la palabra actual y con la palabra actual con un punto, una coma o un punto y coma al final.
     bool flag = false;
-    if (current_word == word || current_word == word + "." || current_word == word + "," || current_word == word + ";")
+    if (current_word == word || current_word == word + "." || current_word == word + "," || current_word == word + ";" || current_word == word + ":")
     {
         flag = true;
     }
@@ -111,4 +114,12 @@ void my_to_lower(std::string &word)
 {
     transform(word.begin(), word.end(), word.begin(), [](unsigned char c)
               { return tolower(c); });
+}
+
+void books_names()
+{
+    std::string path = "Libros_P2/";
+    for (const auto &entry : std::filesystem::directory_iterator(path))
+
+        books_names_vector.push_back("Libros_P2/"+entry.path().filename().string());
 }
