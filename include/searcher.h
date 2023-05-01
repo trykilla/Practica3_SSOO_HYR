@@ -65,7 +65,7 @@ public:
     void new_search(std::string file_name, std::string word)
     {
 
-        std::cout << "Searching in book: " << file_name << std::endl;
+        //std::cout << "Searching in book: " << file_name << std::endl;
         std::this_thread::sleep_for(std::chrono::milliseconds(4000));
         int lines_num = count_lines_in_file(file_name);
         int lines_per_thread = lines_num / TH_NUM;
@@ -122,7 +122,7 @@ public:
                 std::string previous_word, current_word, next_word;
                 while (words_in_line >> current_word && word_counter <= words_num)
                 {
-                    std::cout << "Current word: " << current_word << std::endl;
+                    
                     my_to_upper(current_word);
 
                     if (test_each_symbol(v_thread_struct[thread_v_pos].word, current_word))
@@ -144,15 +144,12 @@ public:
                         /*  Utilizamos el semáforo para añadir información en el vector de estructuras de hilos compartidos.
                             De esta manera, no acceden varios semáforos al mismo tiempo al ser una sección crítica.*/
                         std::unique_lock<std::shared_mutex> lock(searcher_mtx);
-                        for (int i = 0; i < v_thread_struct.size(); i++)
-                        {
-                            std::cout << v_thread_struct[i].thread_id << std::endl;
-                        }
+                        
                         v_thread_struct[thread_v_pos].result.push(result_str);
                         lock.unlock();
 
                         word_counter++;
-                        std::cout << "Word counter: " << word_counter << std::endl;
+                        //std::cout << "Word counter: " << word_counter << std::endl;
                     }
                     previous_word = current_word;
                 }

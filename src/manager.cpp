@@ -16,7 +16,7 @@ void handler(int sig);
 #define MAX_CLIENTS 5
 #define MAX_SEARCHERS 4
 
-std::vector<std::string> dictionary = {"non_found_word"};
+std::vector<std::string> dictionary = {"maxwell", "como", "ellos"};
 std::vector<std::thread> v_searching_threads;
 std::vector<std::thread> v_client_threads;
 
@@ -55,12 +55,12 @@ void handler(int sig)
 
 void create_client(int type)
 {
-    for (int i = 0; i < 1; i++)
+    for (int i = 0; i < 5; i++)
     {
         type = rand() % 3;
 
         v_client_threads.push_back(std::thread(create_threads, i, 0, dictionary[rand() % dictionary.size()]));
-        std::this_thread::sleep_for(std::chrono::seconds(3));
+        std::this_thread::sleep_for(std::chrono::seconds(1));
     }
     std::for_each(v_client_threads.begin(), v_client_threads.end(), [](std::thread &t)
                   { t.join(); });

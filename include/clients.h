@@ -3,13 +3,18 @@
 #include <string>
 #include <queue>
 #include <req_struct.h>
+#include <thread_struct.h>
 #include <mutex>
+#include <fstream>
+
+#define TH_NUM 4
 
 class Client
 {
-protected:
+public:
     int id;
     std::string word;
+    std::vector<thread_struct> v_thread_struct;
 
 public:
     Client(int id, std::string word)
@@ -27,10 +32,32 @@ public:
     {
         return word;
     }
+
+    
+
+    void print_results(std::string word)
+    {
+        std::ofstream outfile;
+        outfile.open("Results.txt", std::ios::app);
+        for (int i = 0; i < TH_NUM; i++)
+        {
+            // Se imprime el resultado de cada hilo hasta que el vector de resultados de cada hilo esté vacío.
+            while (!v_thread_struct[i].result.empty())
+            {
+                outfile << "[Hilo " << i << " inicio:" << v_thread_struct[i].initial_line << " - final: " << v_thread_struct[i].final_line << "]";
+                outfile << " :: línea " << v_thread_struct[i].result.front().line << " :: ... " << v_thread_struct[i].result.front().pre_word << " "
+                          << "" << word << ""
+                          << " " << v_thread_struct[i].result.front().post_word << " ..." << std::endl;
+                v_thread_struct[i].result.pop();
+            }
+        }
+        outfile <<  "\n" <<std::endl;
+    }
 };
 
 class FreeClient : public Client
 {
+
 public:
     FreeClient(int id, std::string word) : Client(id, word)
     {
