@@ -17,7 +17,7 @@
 #include <req_searchs.h>
 #include <searcher.h>
 
-#define WORDS_NUM 4
+#define WORDS_NUM 5
 #define TH_NUM 4
 
 void pay_system(PremiumClient &client);
@@ -54,26 +54,20 @@ void create_threads(int id, int type, std::string word)
 
         FreeSearcher f_searcher = FreeSearcher(id, word, WORDS_NUM);
         std::cout << "\033[1;36mFree searcher with id " << f_searcher.getId() << " created.\033[0m" << std::endl;
-        for (int i = 0; i < books_names_vector.size() && f_searcher.word_counter <= WORDS_NUM; i++)
+        for (int i = 0; i < books_names_vector.size() && f_searcher.word_counter < WORDS_NUM; i++)
         {
-            // std::cout << books_names_vector[i] << std::endl;
-            f_searcher.new_search(books_names_vector[i], word);
-
-            std::cout << "No hay palabra en ese libro" << std::endl;
-            std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+            std::cout << "\033[35mFree searcher with id " << f_searcher.getId() << " searching in book " << books_names_vector[i] << "\033[0m" << std::endl;
+            f_searcher.new_search(books_names_vector[i], word, free_client.v_thread_struct);
+            
+            free_client.print_results(word, books_names_vector[i]);
+            free_client.v_thread_struct.clear();
         }
         std::cout << "\033[35mFree searcher with id " << f_searcher.getId() << " finished.\033[0m" << std::endl;
-
-        for (int i = 0; i < f_searcher.v_thread_struct.size(); i++)
-        {
-            free_client.v_thread_struct.push_back(f_searcher.v_thread_struct[i]);
-        }
 
         v_free_clients.push_back(free_client);
         std::cout << "Peticiones " << petitions_queue.size() << std::endl;
         petitions_queue.pop();
         search_cv.notify_one();
-        free_client.print_results(word);
     }
     else if (type == 1)
     {
@@ -91,7 +85,6 @@ void create_threads(int id, int type, std::string word)
         std::cout << "\033[33mExtra premium client with id " << extra_premium_client.getId() << " created.\033[0m" << std::endl;
         std::cout << "\033[33mExtra premium client word: " << extra_premium_client.getWord() << "\033[0m" << std::endl;
     }
-    
 }
 
 void pay_system(PremiumClient &client)
@@ -101,4 +94,3 @@ void pay_system(PremiumClient &client)
     std::cout << "Payment done." << std::endl;
     std::this_thread::sleep_for(std::chrono::seconds(1));
 }
-

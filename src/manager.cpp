@@ -16,7 +16,7 @@ void handler(int sig);
 #define MAX_CLIENTS 5
 #define MAX_SEARCHERS 4
 
-std::vector<std::string> dictionary = {"maxwell", "como", "ellos"};
+std::vector<std::string> dictionary = {"david"};
 std::vector<std::thread> v_searching_threads;
 std::vector<std::thread> v_client_threads;
 
@@ -55,7 +55,7 @@ void handler(int sig)
 
 void create_client(int type)
 {
-    for (int i = 0; i < 5; i++)
+    for (int i = 0; i < MAX_CLIENTS; i++)
     {
         type = rand() % 3;
 

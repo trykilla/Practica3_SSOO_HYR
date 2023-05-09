@@ -81,7 +81,7 @@ bool test_each_symbol(std::string word, std::string current_word)
 {
     // Se compara la palabra con la palabra actual y con la palabra actual con un punto, una coma o un punto y coma al final.
     bool flag = false;
-    if (current_word == word || current_word == word + "." || current_word == word + "," || current_word == word + ";" || current_word == word + ":")
+    if (current_word == word || current_word == word + "??" || current_word == word + "." || current_word == word + "," || current_word == "-" + word || current_word == word + "-" || current_word == word + ";" || current_word == word + ":")
     {
         flag = true;
     }

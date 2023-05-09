@@ -33,12 +33,13 @@ public:
         return word;
     }
 
-    
-
-    void print_results(std::string word)
+    void print_results(std::string word, std::string book_name)
     {
         std::ofstream outfile;
         outfile.open("Results.txt", std::ios::app);
+        outfile << "Cliente " << id << " :: palabra " << word << std::endl;
+        outfile << "Libro: " << book_name << std::endl;
+        
         for (int i = 0; i < TH_NUM; i++)
         {
             // Se imprime el resultado de cada hilo hasta que el vector de resultados de cada hilo esté vacío.
@@ -46,12 +47,13 @@ public:
             {
                 outfile << "[Hilo " << i << " inicio:" << v_thread_struct[i].initial_line << " - final: " << v_thread_struct[i].final_line << "]";
                 outfile << " :: línea " << v_thread_struct[i].result.front().line << " :: ... " << v_thread_struct[i].result.front().pre_word << " "
-                          << "" << word << ""
-                          << " " << v_thread_struct[i].result.front().post_word << " ..." << std::endl;
+                        << "" << word << ""
+                        << " " << v_thread_struct[i].result.front().post_word << " ..." << std::endl;
                 v_thread_struct[i].result.pop();
             }
+            outfile << "\n"
+                    << std::endl;
         }
-        outfile <<  "\n" <<std::endl;
     }
 };
 

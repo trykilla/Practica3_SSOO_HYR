@@ -1,0 +1,22 @@
+{
+    "type": "cppbuild",
+    "label": "threads",
+    "command": "/usr/bin/g++",
+    "args" : [
+        "-fdiagnostics-color=always",
+        "-g",
+        "${file}",
+        "-o",
+        "${fileDirname}/${fileBasenameNoExtension}",
+        "-pthread",
+        "-std=c++17"
+    ],
+    "options": {
+        "cwd": "${fileDirname}"
+    },
+    "problemMatcher": [
+        "$gcc"
+    ],
+    "group" : "build",
+    "detail" : "Tarea generada por el depurador."
+}

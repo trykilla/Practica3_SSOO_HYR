@@ -5,7 +5,7 @@ DIRSRC := src/
 
 #g++ archivo.cpp -o archivo -pthread -std=c++11
 
-CFLAGS := -I$(DIRHEA) -pthread -std=c++20
+CFLAGS := -I$(DIRHEA) -pthread -std=c++17
 CC := g++
 
 all : dirs manager  #pa, pb
@@ -25,3 +25,7 @@ solution:
 
 clean : 
 	rm -rf *~ core $(DIROBJ) $(DIREXE) $(DIRHEA)*~ $(DIRSRC)*~
+
+clear_file: 
+	echo "" > Results.txt
+
