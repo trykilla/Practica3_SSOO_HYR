@@ -8,26 +8,34 @@
 #include <atomic>
 #include <fstream>
 #include <shared_mutex>
+#include <def.h>
 // #include <my_lib.h>
 
-#define TH_NUM 4
+
 
 class Searcher
 {
 protected:
     int id;
+    int type;
     std::string word;
 
 public:
-    Searcher(int id, std::string word)
+    Searcher(int id, std::string word, int type)
     {
         this->word = word;
         this->id = id;
+        this->type = type;
     }
 
     int getId() const
     {
         return id;
+    }
+
+    int getType() const
+    {
+        return type;
     }
 
     std::string getWord() const
@@ -41,13 +49,13 @@ class FreeSearcher : public Searcher
 public:
     int words_num;
     std::atomic<int> word_counter;
-
+    
     std::vector<thread_struct> v_thread_struct;
     std::shared_mutex searcher_mtx;
     std::vector<std::thread> v_threads_books;
 
 public:
-    FreeSearcher(int id, std::string word, int words_num) : Searcher(id, word)
+    FreeSearcher(int id, std::string word,int type, int words_num) : Searcher(id, word, type)
     {
         this->words_num = words_num;
         this->word_counter = 0;
@@ -157,6 +165,7 @@ public:
                                 De esta manera, no acceden varios semáforos al mismo tiempo al ser una sección crítica.*/
                             std::unique_lock<std::shared_mutex> lock(searcher_mtx);
                             v_thread_struct[thread_v_pos].result.push(result_str);
+                            if (this->getType() == 0)
                             word_counter++;
                             lock.unlock();
 

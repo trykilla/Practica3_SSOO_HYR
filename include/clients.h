@@ -6,21 +6,22 @@
 #include <thread_struct.h>
 #include <mutex>
 #include <fstream>
-
-#define TH_NUM 4
+#include <def.h>
 
 class Client
 {
 public:
     int id;
     std::string word;
+    std::string client_type;
     std::vector<thread_struct> v_thread_struct;
 
 public:
-    Client(int id, std::string word)
+    Client(int id, std::string word, std::string client_type)
     {
         this->word = word;
         this->id = id;
+        this->client_type = client_type;
     }
 
     int getId() const
@@ -37,8 +38,9 @@ public:
     {
         std::ofstream outfile;
         outfile.open("Results.txt", std::ios::app);
-        outfile << "Cliente " << id << " :: palabra " << word << std::endl;
-        outfile << "Libro: " << book_name << std::endl;
+        outfile << "-------------------------------------------------------------------------------------------------" << std::endl;
+        outfile << "Tipo de cliente: " << client_type <<" Cliente " << id << " :: palabra " << word << std::endl;
+        outfile << "Libro: " << book_name << "\n "<<std::endl;
         
         for (int i = 0; i < TH_NUM; i++)
         {
@@ -51,8 +53,7 @@ public:
                         << " " << v_thread_struct[i].result.front().post_word << " ..." << std::endl;
                 v_thread_struct[i].result.pop();
             }
-            outfile << "\n"
-                    << std::endl;
+            
         }
     }
 };
@@ -61,7 +62,7 @@ class FreeClient : public Client
 {
 
 public:
-    FreeClient(int id, std::string word) : Client(id, word)
+    FreeClient(int id, std::string word, std::string client_type) : Client(id, word, client_type)
     {
     }
 };
@@ -73,7 +74,7 @@ private:
     std::mutex client_mtx;
 
 public:
-    PremiumClient(int id, std::string word, double balance) : Client(id, word)
+    PremiumClient(int id, std::string word, std::string client_type,double balance) : Client(id, word, client_type)
     {
         this->balance = balance;
     }
@@ -102,7 +103,7 @@ public:
 class ExtraPremiumClient : public Client
 {
 public:
-    ExtraPremiumClient(int id, std::string word) : Client(id, word)
+    ExtraPremiumClient(int id, std::string word, std::string client_type) : Client(id, word, client_type)
     {
         // Constructor por defecto
     }
