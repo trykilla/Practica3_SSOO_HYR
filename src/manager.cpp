@@ -9,6 +9,7 @@
 #include <proc.h>
 #include <def.h>
 
+
 void create_client(int type);
 
 void handler(int sig);
@@ -22,6 +23,7 @@ std::vector<std::thread> v_client_threads;
 
 int main()
 {
+    std::thread payment_th(pay_system);
     srand(time(NULL));
     int type = 2;
     signal(SIGINT, handler);
@@ -30,6 +32,8 @@ int main()
     // wake_up_searchers();
     std::cout << "Todos los procesos hijos creados." << std::endl;
     std::cout << "Todos los procesos hijos terminados." << std::endl;
+    payment_th.join();
+    
     return EXIT_SUCCESS;
 }
 
@@ -43,11 +47,11 @@ void handler(int sig)
 
 void create_client(int type)
 {
-    for (int i = 0; i < MAX_CLIENTS; i++)
+    for (int i = 0; i < 1; i++)
     {
         type = rand() % 3;
 
-        v_client_threads.push_back(std::thread(create_threads, i, type, dictionary[rand() % dictionary.size()]));
+        v_client_threads.push_back(std::thread(create_threads, i, 2, dictionary[rand() % dictionary.size()]));
         std::this_thread::sleep_for(std::chrono::seconds(1));
     }
     std::for_each(v_client_threads.begin(), v_client_threads.end(), [](std::thread &t)

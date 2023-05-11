@@ -69,9 +69,9 @@ public:
 
 class PremiumClient : public Client
 {
-private:
+public:
     double balance;
-    std::mutex client_mtx;
+    
 
 public:
     PremiumClient(int id, std::string word, std::string client_type,double balance) : Client(id, word, client_type)
@@ -79,15 +79,6 @@ public:
         this->balance = balance;
     }
 
-    void block_client()
-    {
-        client_mtx.lock();
-    }
-
-    void unblock_client()
-    {
-        client_mtx.unlock();
-    }
 
     double get_balance() const
     {
