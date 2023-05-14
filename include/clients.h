@@ -15,6 +15,7 @@ public:
     std::string word;
     std::string client_type;
     std::vector<thread_struct> v_thread_struct;
+    
 
 public:
     Client(int id, std::string word, std::string client_type)
@@ -37,16 +38,19 @@ public:
     void print_results(std::string word, std::string book_name)
     {
         std::ofstream outfile;
-        outfile.open("Results.txt", std::ios::app);
+        bool found_results = false;
+        outfile.open("Files/Results.txt", std::ios::app);
         outfile << "-------------------------------------------------------------------------------------------------" << std::endl;
         outfile << "Tipo de cliente: " << client_type <<" Cliente " << id << " :: palabra " << word << std::endl;
         outfile << "Libro: " << book_name << "\n "<<std::endl;
+        
         
         for (int i = 0; i < TH_NUM; i++)
         {
             // Se imprime el resultado de cada hilo hasta que el vector de resultados de cada hilo esté vacío.
             while (!v_thread_struct[i].result.empty())
             {
+                found_results = true;
                 outfile << "[Hilo " << i << " inicio:" << v_thread_struct[i].initial_line << " - final: " << v_thread_struct[i].final_line << "]";
                 outfile << " :: línea " << v_thread_struct[i].result.front().line << " :: ... " << v_thread_struct[i].result.front().pre_word << " "
                         << "" << word << ""
@@ -54,6 +58,10 @@ public:
                 v_thread_struct[i].result.pop();
             }
             
+        }
+        if (!found_results)
+        {
+            outfile << "No se han encontrado resultados para la palabra " << word << " en el libro " << book_name << std::endl;
         }
     }
 };

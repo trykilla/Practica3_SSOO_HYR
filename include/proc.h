@@ -20,176 +20,159 @@
 
 void pay_system();
 void books_names();
+void searchers_wait();
+void create_request(Client client, int type, int balance, sh_request &req);
+void insert_in_queue(sh_request req, int inf_lim, int sup_lim);
+void search_for_words(FreeSearcher &searcher, Client client, std::string word);
 
 std::mutex g_mtx;
-
-std::vector<thread_struct> v_thread_struct;
 std::queue<sh_request> petitions_queue;
-
 std::condition_variable search_cv;
-std::vector<std::thread> v_threads_books;
 std::vector<FreeClient> v_free_clients;
 std::vector<PremiumClient> v_premium_clients;
 std::vector<ExtraPremiumClient> v_extra_premium_clients;
-
-void any_client(Client client);
+bool continue_waiting = true;
 
 void create_threads(int id, int type, std::string word)
 {
+    std::cout << MAGENTA << "Word to look for: " << word << RESET << std::endl;
+    std::this_thread::sleep_for(std::chrono::seconds(1));
 
     if (type == 0)
     {
+
         FreeClient free_client = FreeClient(id, word, "Free Client");
-        std::cout << "\033[1;36mFree client with id " << free_client.getId() << " created.\033[0m" << std::endl;
+        std::cout << BLUE << "Free client with id " << free_client.getId() << " created." << RESET << std::endl;
+
         struct sh_request req;
-        req.client_id = free_client.getId();
-        req.client_type = type;
-        req.balance = 0;
-        req.word = free_client.getWord();
-
-        while (true)
-        {
-            srand(time(NULL));
-            int in = rand() % 101;
-            if (in >= 0 && in <= 20)
-            {
-                petitions_queue.push(req);
-                break;
-            }
-        }
-        std::cout << "Peticiones " << petitions_queue.size() << std::endl;
-
-        std::unique_lock<std::mutex> lock(g_mtx);
-        search_cv.wait(lock, []
-                       { return petitions_queue.size() <= 4; });
-        lock.unlock();
+        create_request(free_client, type, 0, req);
+        insert_in_queue(req, 0, 20);
 
         FreeSearcher f_searcher = FreeSearcher(id, word, type, WORDS_NUM);
         f_searcher.credit_counter = 1;
-        std::cout << "\033[1;36mFree searcher with id " << f_searcher.getId() << " created.\033[0m" << std::endl;
-        for (int i = 0; i < books_names_vector.size() && f_searcher.word_counter < WORDS_NUM; i++)
-        {
-            std::cout << "\033[35mFree searcher with id " << f_searcher.getId() << " searching in book " << books_names_vector[i] << "\033[0m" << std::endl;
-            f_searcher.new_search(books_names_vector[i], word, free_client.v_thread_struct);
 
-            free_client.print_results(word, books_names_vector[i]);
+        searchers_wait();
 
-            free_client.v_thread_struct.clear();
-        }
-        std::cout << "\033[35mFree searcher with id " << f_searcher.getId() << " finished.\033[0m" << std::endl;
+        std::cout << BLUE << "Searcher with id " << f_searcher.getId() << " created." << RESET << std::endl;
+
+        auto start_time = std::chrono::high_resolution_clock::now();
+        search_for_words(f_searcher, free_client, word);
+        auto end_time = std::chrono::high_resolution_clock::now();
+        auto elapsed_time_ms = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count();
+
+        std::cout << BLUE << "Client with id " << free_client.getId() << " finished in " << elapsed_time_ms << " ms." << RESET << std::endl;
+        std::cout << BLUE << "Searcher with id " << f_searcher.getId() << " finished." << RESET << std::endl;
 
         v_free_clients.push_back(free_client);
-        std::cout << "Peticiones " << petitions_queue.size() << std::endl;
         petitions_queue.pop();
         search_cv.notify_one();
     }
     else if (type == 1)
     {
         srand(time(NULL));
-        // // int balance = rand() % 2;
-        int balance = 5;
+        int balance = rand() % 101;
+
         PremiumClient premium_client = PremiumClient(id, word, "Premium Client", balance);
+        std::cout << YELLOW << "Premium client with id " << premium_client.getId() << " created." << RESET << std::endl;
+
         struct sh_request req;
-        req.client_id = premium_client.getId();
-        req.client_type = type;
-        req.balance = balance;
-        req.word = premium_client.getWord();
+        create_request(premium_client, type, balance, req);
+        insert_in_queue(req, 20, 100);
 
-        while (true)
-        {
-            srand(time(NULL));
-            int in = rand() % 101;
-            if (in >= 20 && in <= 100)
-            {
-                petitions_queue.push(req);
-                break;
-            }
-        }
-
-        std::cout << "Peticiones " << petitions_queue.size() << std::endl;
-
-        std::unique_lock<std::mutex> p_lock(g_mtx);
-        search_cv.wait(p_lock, []
-                       { return petitions_queue.size() <= 4; });
-        p_lock.unlock();
+        searchers_wait();
 
         FreeSearcher f_searcher = FreeSearcher(id, word, type, WORDS_NUM);
         f_searcher.credit_counter = premium_client.get_balance();
-        std::cout << "\033[1;36mFree searcher with id " << f_searcher.getId() << " created.\033[0m" << std::endl;
-        for (int i = 0; i < books_names_vector.size() && f_searcher.word_counter < WORDS_NUM; i++)
-        {
-            std::cout << "\033[35mFree searcher with id " << f_searcher.getId() << " searching in book " << books_names_vector[i] << "\033[0m" << std::endl;
-            f_searcher.new_search(books_names_vector[i], word, premium_client.v_thread_struct);
-            premium_client.print_results(word, books_names_vector[i]);
-            premium_client.v_thread_struct.clear();
-        }
+        std::cout << YELLOW << "Searcher with id " << f_searcher.getId() << " created." << RESET << std::endl;
+
+        auto start_time = std::chrono::high_resolution_clock::now();
+        search_for_words(f_searcher, premium_client, word);
+        auto end_time = std::chrono::high_resolution_clock::now();
+        auto elapsed_time_ms = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count();
+
+        std::cout << YELLOW << "Client with id " << premium_client.getId() << " finished in " << elapsed_time_ms << " ms." << RESET << std::endl;
+
         premium_client.set_balance(f_searcher.credit_counter);
-        std::cout << "Balance final: " << premium_client.get_balance() << std::endl;
-        std::cout << "\033[35mFree searcher with id " << f_searcher.getId() << " finished.\033[0m" << std::endl;
+
+        std::cout << YELLOW << "Searcher with id " << f_searcher.getId() << " finished." << RESET << std::endl;
 
         v_premium_clients.push_back(premium_client);
-        std::cout << "Peticiones " << petitions_queue.size() << std::endl;
         petitions_queue.pop();
         search_cv.notify_one();
-        std::cout << "\033[1;31mPremium client with id " << premium_client.getId() << " created.\033[0m" << std::endl;
-        std::cout << "\033[1;31mPremium client word: " << premium_client.getWord() << "\033[0m" << std::endl;
-        std::cout << "\033[1;31mPremium client balance: " << premium_client.get_balance() << "\033[0m" << std::endl;
     }
     else if (type == 2)
     {
         ExtraPremiumClient extra_premium_client = ExtraPremiumClient(id, word, "Extra Premium Client");
-        std::cout << "\033[33mExtra premium client with id " << extra_premium_client.getId() << " created.\033[0m" << std::endl;
-        std::cout << "\033[33mExtra premium client word: " << extra_premium_client.getWord() << "\033[0m" << std::endl;
+        std::cout << GREEN << "Extra premium client with id " << extra_premium_client.getId() << " created." << RESET << std::endl;
 
         struct sh_request req;
-        req.client_id = extra_premium_client.getId();
-        req.client_type = type;
-        req.balance = 0;
-        req.word = extra_premium_client.getWord();
+        create_request(extra_premium_client, type, 0, req);
+        insert_in_queue(req, 20, 100);
 
-        while (true)
-        {
-            srand(time(NULL));
-            int in = rand() % 101;
-            if (in >= 20 && in <= 100)
-            {
-                petitions_queue.push(req);
-                break;
-            }
-        }
-
-        std::unique_lock<std::mutex> lock(g_mtx);
-        search_cv.wait(lock, []
-                       { return petitions_queue.size() <= 4; });
-        lock.unlock();
+        searchers_wait();
 
         FreeSearcher f_searcher = FreeSearcher(id, word, type, WORDS_NUM);
-        f_searcher.credit_counter = 1;
-        any_client(extra_premium_client);
+        f_searcher.credit_counter = 0;
 
-        std::cout << "\033[1;36mExtraPremium searcher with id " << f_searcher.getId() << " created.\033[0m" << std::endl;
-        for (int i = 0; i < books_names_vector.size() && f_searcher.word_counter < WORDS_NUM; i++)
-        {
-            std::cout << "\033[35mExtraPremium searcher with id " << f_searcher.getId() << " searching in book " << books_names_vector[i] << "\033[0m" << std::endl;
-            f_searcher.new_search(books_names_vector[i], word, extra_premium_client.v_thread_struct);
+        std::cout << GREEN << "Searcher with id " << f_searcher.getId() << " created." << RESET << std::endl;
+        auto start_time = std::chrono::high_resolution_clock::now();
+        search_for_words(f_searcher, extra_premium_client, word);
+        auto end_time = std::chrono::high_resolution_clock::now();
+        auto elapsed_time_ms = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count();
 
-            extra_premium_client.print_results(word, books_names_vector[i]);
-
-            extra_premium_client.v_thread_struct.clear();
-        }
-        std::cout << "\033[35mFree searcher with id " << f_searcher.getId() << " finished.\033[0m" << std::endl;
+        std::cout << GREEN << "Client with id " << extra_premium_client.getId() << " finished in " << elapsed_time_ms << " ms." << RESET << std::endl;
+        std::cout << GREEN << "Searcher with id " << f_searcher.getId() << " finished." << RESET << std::endl;
 
         v_extra_premium_clients.push_back(extra_premium_client);
-        std::cout << "Peticiones " << petitions_queue.size() << std::endl;
         petitions_queue.pop();
         search_cv.notify_one();
     }
 }
 
-void any_client(Client client)
+void search_for_words(FreeSearcher &searcher, Client client, std::string word)
 {
 
-    std::cout << "\033[1;31mClient with id " << client.getId() << " created.\033[0m" << std::endl;
-    std::cout << "\033[1;31mClient word: " << client.getWord() << "\033[0m" << std::endl;
-    
+    for (int i = 0; i < books_names_vector.size() && searcher.word_counter < WORDS_NUM; i++)
+    {
+        std::cout << CYAN << "Searcher with id " << searcher.getId() << " searching in book " << books_names_vector[i] << RESET << std::endl;
+        searcher.new_search(books_names_vector[i], word, client.v_thread_struct);
+
+        client.print_results(word, books_names_vector[i]);
+        client.v_thread_struct.clear();
+    }
+}
+
+void create_request(Client client, int type, int balance, sh_request &req)
+{
+    req.client_id = client.getId();
+    req.client_type = type;
+    req.balance = balance;
+    req.word = client.getWord();
+}
+
+void insert_in_queue(sh_request req, int inf_lim, int sup_lim)
+{
+    srand(time(NULL));
+
+    while (true)
+    {
+        int in = rand() % 101;
+
+        if (in >= inf_lim && in <= sup_lim)
+        {
+
+            petitions_queue.push(req);
+            break;
+        }
+    }
+}
+
+void searchers_wait()
+{
+    std::unique_lock<std::mutex> lock(g_mtx);
+
+    search_cv.wait(lock, []
+                   { return petitions_queue.size() <= 4; });
+
+    lock.unlock();
 }

@@ -8,33 +8,53 @@
 #include <signal.h>
 #include <proc.h>
 #include <def.h>
+#include <iomanip>
 
-
-void create_client(int type);
-
+void create_client();
+void create_dict();
 void handler(int sig);
-// void wake_up_searchers();
 
-
-
-std::vector<std::string> dictionary = {"david"};
 std::vector<std::thread> v_searching_threads;
 std::vector<std::thread> v_client_threads;
+std::unordered_set<std::string> dictionary_set;
 
 int main()
 {
+    create_dict();
+    
+    std::cout << MAGENTA << std::setw((80 + 30) / 2) << WELCOME << RESET << std::endl;
+    std::cout << MAGENTA << LINE << RESET << std::endl;
+    std::cout << MAGENTA << "Número de procesadores disponibles: " << TH_NUM << RESET << std::endl;
+    std::this_thread::sleep_for(std::chrono::seconds(1));
     std::thread payment_th(pay_system);
-    srand(time(NULL));
-    int type = 2;
+    payment_th.detach();
+    std::this_thread::sleep_for(std::chrono::seconds(1));
     signal(SIGINT, handler);
     books_names();
-    create_client(type);
-    // wake_up_searchers();
-    std::cout << "Todos los procesos hijos creados." << std::endl;
-    std::cout << "Todos los procesos hijos terminados." << std::endl;
-    payment_th.join();
-    
+    create_client();
+
+    std::cout << GREEN << "Todos los hilos terminados. Si se quiere salir antes del programa, pulsar Ctrl + C" << RESET << std::endl;
+
     return EXIT_SUCCESS;
+}
+
+void create_dict()
+{
+    std::ifstream file("Files/Dictionary.txt");
+    if (file.is_open())
+    {
+        std::string word;
+        while (file >> word)
+        {
+            dictionary_set.insert(word);
+        }
+        file.close();
+    }
+    else
+    {
+        std::cout << "Error: cannot open file." << std::endl;
+        exit(EXIT_FAILURE);
+    }
 }
 
 void handler(int sig)
@@ -45,14 +65,16 @@ void handler(int sig)
     exit(EXIT_SUCCESS);
 }
 
-void create_client(int type)
+void create_client()
 {
-    for (int i = 0; i < 1; i++)
+    for (int i = 0; i < TH_NUM; i++)
     {
-        type = rand() % 3;
+        int type = rand() % 3;
+        std::string random_word = *std::next(std::begin(dictionary_set), std::rand() % dictionary_set.size());
 
-        v_client_threads.push_back(std::thread(create_threads, i, 2, dictionary[rand() % dictionary.size()]));
-        std::this_thread::sleep_for(std::chrono::seconds(1));
+
+        v_client_threads.push_back(std::thread(create_threads, i, type, random_word));
+        std::this_thread::sleep_for(std::chrono::seconds(1)); // tiempo de espera para no colapsar la terminal de clientes
     }
     std::for_each(v_client_threads.begin(), v_client_threads.end(), [](std::thread &t)
                   { t.join(); });

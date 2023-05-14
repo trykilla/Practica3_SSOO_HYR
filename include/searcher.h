@@ -80,7 +80,7 @@ public:
     {
 
         // std::cout << "Searching in book: " << file_name << std::endl;
-        std::this_thread::sleep_for(std::chrono::milliseconds(4000));
+        // std::this_thread::sleep_for(std::chrono::milliseconds(4000));
         int lines_num = count_lines_in_file(file_name);
         int lines_per_thread = lines_num / TH_NUM;
 
@@ -94,7 +94,6 @@ public:
             {
                 final_line = lines_num - 1;
             }
-            std::cout << "Book" << file_name << " - Thread " << i << " - Lines: " << init_line << " - " << final_line << std::endl;
             v_thread_struct.push_back(thread_struct{id, init_line, final_line, word, std::queue<result_struct>()});
 
             // Se crean los hilos y se añaden en el vector de hilos, a su vez se llama a la función find_word_in_file,
@@ -108,8 +107,7 @@ public:
 
         for (int i = 0; i < TH_NUM; i++)
         {
-            std::cout << "from for:"
-                      << "Thread " << i << " - Lines: " << v_thread_struct[i].initial_line << " - " << v_thread_struct[i].final_line << std::endl;
+            
             v_thread_struct_client.push_back(v_thread_struct[i]);
         }
 
@@ -146,6 +144,7 @@ public:
 
                 std::istringstream words_in_line(line);
                 std::string previous_word, current_word, next_word;
+               
                 while (words_in_line >> current_word && word_counter < words_num && credit_counter > 0)
                 {
 
@@ -185,7 +184,7 @@ public:
                 if (credit_counter == 0)
                 {
 
-                    srand(time(NULL));
+                    std::cout << YELLOW << "Waiting for payment..." << RESET <<std::endl;
                     std::shared_ptr<request> p = std::make_shared<request>();
 
                     p->balance = credit_counter;
@@ -212,16 +211,26 @@ public:
 
 void pay_system()
 {
+    std::cout << RED << "Pay system started." << RESET<< std::endl;
+    while (true)
+    {
 
-    std::cout << "Pay system started." << std::endl;
+        std::unique_lock<std::mutex> lock(pay_mtx);
+        auto wait_result = payment_cv.wait_for(lock,std::chrono::seconds(15), []()
+                        { return !payment_queue.empty(); });
 
-    std::unique_lock<std::mutex> lock(pay_mtx);
-    payment_cv.wait(lock, []()
-                    { return !payment_queue.empty(); });
-    std::cout << "Paying..." << std::endl;
-    std::this_thread::sleep_for(std::chrono::seconds(1));
-    payment_queue.front()->balance = 100;
-    payment_queue.front()->mtx.unlock();
-    payment_queue.pop();
-    std::cout << "Payment done." << std::endl;
+        if (!wait_result)
+        {
+            std::cout << RED << "No payment received in 15 secs." << RESET<<std::endl;
+            return;
+        }
+
+        std::cout << YELLOW <<"Paying..." << RESET<<std::endl;
+        std::this_thread::sleep_for(std::chrono::seconds(1));
+        payment_queue.front()->balance = 100;
+        payment_queue.front()->mtx.unlock();
+        payment_queue.pop();
+        std::cout << YELLOW <<"Payment done." << RESET << std::endl;
+
+    }
 }

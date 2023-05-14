@@ -27,5 +27,5 @@ clean :
 	rm -rf *~ core $(DIROBJ) $(DIREXE) $(DIRHEA)*~ $(DIRSRC)*~
 
 clear_file: 
-	echo "" > Results.txt
+	echo "" > Files/Results.txt
 
