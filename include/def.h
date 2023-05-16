@@ -1,3 +1,12 @@
+/************************************************************************************
+ * Proyecto: Práctica 3 - Sistemas Operativos II                                    *
+ * Nombre del programa: def.h                                                       *
+ * Autores: Héctor Alberca Sánchez-Quintanar y Rubén Crespo Calcerrada              *
+ * Fecha: 14/05/2023                                                                *
+ * Propósito: encontramos todas las definiciones de variables globales usadas       *
+ * en todo el programa.                                                             *
+ ************************************************************************************/
+
 #include <iostream>
 #include <thread>
 

@@ -1,3 +1,14 @@
+/************************************************************************************
+ * Proyecto: Práctica 3 - Sistemas Operativos II                                    *
+ * Nombre del programa: clients.h                                                   *                                                       
+ * Autores: Héctor Alberca Sánchez-Quintanar y Rubén Crespo Calcerrada              *
+ * Fecha: 14/05/2023                                                                *
+ * Propósito: Programa dedicado a los clientes, encontramos la clase clientes,      *
+ * a continuación, tenemos las 3 clases que heredan de la clase client, encontramos *
+ * los 3 tipos de clientes, gratuito, premium y extra premium.                      *   
+ ************************************************************************************/
+
+
 #include <iostream>
 #include <thread>
 #include <string>
@@ -35,6 +46,14 @@ public:
         return word;
     }
 
+    /**
+    * Imprime los resultados de la búsqueda de la palabra en el fichero results.txt.
+    *
+    * @param word Palabra a buscar
+    * @param book_name Nombre del libro en el que se busca la palabra
+    *
+    * @returns No devuelve nada
+    */
     void print_results(std::string word, std::string book_name)
     {
         std::ofstream outfile;

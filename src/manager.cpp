@@ -1,3 +1,12 @@
+/************************************************************************************
+ * Proyecto: Práctica 3 - Sistemas Operativos II                                    *
+ * Nombre del programa: manager.cpp                                                 *                                                       
+ * Autores: Héctor Alberca Sánchez-Quintanar y Rubén Crespo Calcerrada              *
+ * Fecha: 14/05/2023                                                                *
+ * Propósito: Programa que crea y gestiona los hilos                                *   
+ ************************************************************************************/
+
+
 #include <iostream>
 #include <clients.h>
 #include <cstdlib>
@@ -20,6 +29,9 @@ std::unordered_set<std::string> dictionary_set;
 
 int main()
 {
+    /* Se crea un diccionario al que se le añaden diversas palabras, de ahí saldrán todas las palabras 
+        aleatorias que se pueden elegir entre los clientes. 
+        A continuación se crea el hilo para el sistema de pago y los diversos clientes. */
     create_dict();
     
     std::cout << MAGENTA << std::setw((80 + 30) / 2) << WELCOME << RESET << std::endl;
@@ -37,6 +49,15 @@ int main()
 
     return EXIT_SUCCESS;
 }
+
+
+/**
+ * Añade en una variable global todas las palabras del archivo.
+ *
+ * @param No requiere parametros.
+ *
+ * @returns No devuelve nada.
+ */
 
 void create_dict()
 {
@@ -57,6 +78,13 @@ void create_dict()
     }
 }
 
+/**
+ * Maneja las señales de interrupción del programa.
+ *
+ * @param signum Número de la señal
+ *
+ * @returns No devuelve nada
+ */
 void handler(int sig)
 {
     std::cout << "Señal SIGINT recibida, terminando procesos y liberando recursos..." << std::endl;
@@ -65,8 +93,19 @@ void handler(int sig)
     exit(EXIT_SUCCESS);
 }
 
+
+/**
+ * Crea los hilos de los clientes.
+ *
+ * @param No requiere parametros.
+ *
+ * @returns No devuelve nada
+ */
+
 void create_client()
 {
+    /* Se calcula un aleatorio para el tipo de clientes y se elige al azar la palabra entre las del diccionario,
+        con esto se crean los diversos clientes y se le asgina un hilo a cada uno de los clientes. */
     for (int i = 0; i < TH_NUM; i++)
     {
         int type = rand() % 3;
@@ -76,6 +115,7 @@ void create_client()
         v_client_threads.push_back(std::thread(create_threads, i, type, random_word));
         std::this_thread::sleep_for(std::chrono::seconds(1)); // tiempo de espera para no colapsar la terminal de clientes
     }
+    /* Se espera a que terminen todos los clientes. */
     std::for_each(v_client_threads.begin(), v_client_threads.end(), [](std::thread &t)
                   { t.join(); });
 }

@@ -1,8 +1,8 @@
 /************************************************************************************
- * Proyecto: Práctica 2 - Sistemas Operativos II                                    *
+ * Proyecto: Práctica 3 - Sistemas Operativos II                                    *
  * Nombre del programa: my_lib.h                                                    *
  * Autores: Héctor Alberca Sánchez-Quintanar y Rubén Crespo Calcerrada              *
- * Fecha: 8/04/2023                                                                 *
+ * Fecha: 14/05/2023                                                                 *
  * Propósito: archivo en el cual se encuentran las distintas funciones              *
  * que son genéricas y pueden ser utilizadas durante distintas prácticas.           *
  ************************************************************************************/
@@ -116,6 +116,13 @@ void my_to_lower(std::string &word)
               { return tolower(c); });
 }
 
+/**
+ * Añade en una variable global todas los libros encontrados en ese directorio.
+ *
+ * @param No requiere parametros.
+ *
+ * @returns No devuelve nada.
+ */
 void books_names()
 {
     std::string path = "Libros_P2/";

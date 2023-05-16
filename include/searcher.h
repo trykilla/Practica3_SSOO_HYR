@@ -1,3 +1,15 @@
+/************************************************************************************
+ * Proyecto: Práctica 3 - Sistemas Operativos II                                    *
+ * Nombre del programa: searcher.h                                                  *
+ * Autores: Héctor Alberca Sánchez-Quintanar y Rubén Crespo Calcerrada              *
+ * Fecha: 14/05/2023                                                                *
+ * Propósito: archivo en el cual se encuentran las distintas funciones              *
+ * que van a ser utilizadas para la gestión de los buscadores y las                 *
+ * distintas búsquedas dependiendo del tipo de cliente, también encontramos         *
+ * la gestión del sistema de pago.                                                  *
+ ************************************************************************************/
+
+
 #include <iostream>
 #include <thread>
 #include <string>
@@ -49,6 +61,9 @@ public:
     }
 };
 
+//Tenemos la clase FreeSearcher que hereda de la clase Searcher, en esta clase se encuentran las funciones
+//que se encargan de buscar la palabra en el fichero, así como de gestionar el sistema de pago.
+
 class FreeSearcher : public Searcher
 {
 public:
@@ -76,6 +91,16 @@ public:
         return id;
     }
 
+    /**
+    * Gestiona los hilos para la busqueda en los ficheros y devuelve la información obtenida al cliente.
+    *
+    * @param file_name Nombre del fichero
+    * @param word Palabra a buscar
+    * @param v_thread_struct_client Vector de estructuras de hilos de la clase cliente, donde se añade la información
+    *
+    * @returns No devuelve nada
+    */
+
     void new_search(std::string file_name, std::string word, std::vector<thread_struct> &v_thread_struct_client)
     {
 
@@ -98,22 +123,33 @@ public:
 
             // Se crean los hilos y se añaden en el vector de hilos, a su vez se llama a la función find_word_in_file,
             // que es la que se encarga de buscar la palabra en el fichero.
-            // v_threads_books.push_back(std::thread(find_word_in_file, file_name, i));
+            // v_threads_books.push_back(std::thread(Freesearcher::find_word_in_file, file_name, i));
 
             v_threads_books.push_back(std::thread(&FreeSearcher::find_word_in_file, this, file_name, i));
         }
 
         std::for_each(v_threads_books.begin(), v_threads_books.end(), std::mem_fn(&std::thread::join));
 
+        // Se añade la información de los hilos al vector de hilos de la clase cliente, cuando acaba la busqueda.
         for (int i = 0; i < TH_NUM; i++)
         {
             
             v_thread_struct_client.push_back(v_thread_struct[i]);
         }
 
+        //Se limpian los vectores de hilos para que no haya problemas en la siguiente búsqueda.
         v_thread_struct.clear();
         v_threads_books.clear();
     }
+
+    /**
+    * Busca la palabra en el fichero.
+    *
+    * @param file_name Nombre del fichero
+    * @param thread_v_pos Posición del vector de hilos
+    *
+    * @returns No devuelve nada
+    */
 
     void find_word_in_file(std::string file_name, int thread_v_pos)
     {
@@ -183,10 +219,14 @@ public:
                 waiting_mtx.lock();
                 if (credit_counter == 0)
                 {
+                    //En el caso del cliente de pago, si su crédito es 0, se añade una petición al sistema de pago.
+                    //Hasta que no haya realizado el pago (en este caso se hace automático), no se le deja seguir buscando.
 
                     std::cout << YELLOW << "Waiting for payment..." << RESET <<std::endl;
                     std::shared_ptr<request> p = std::make_shared<request>();
 
+                    //Se crea una petición de pago y se añade al sistema, bloqueando con un semáforo para que no entren varios hilos,
+                    //de varios clientes.
                     p->balance = credit_counter;
                     p->mtx.lock();
 
@@ -198,6 +238,7 @@ public:
 
                     p->mtx.lock();
 
+                    //Una vez que se ha realizado el pago, se desbloquea el semáforo y se deja seguir buscando.
                     credit_counter = p->balance;
                 }
                 waiting_mtx.unlock();
@@ -208,6 +249,16 @@ public:
         file.close();
     }
 };
+
+/**
+ * Gestiona el pago de los clientes premium y el sistema de pago. Solamente se puede realizar el pago de un cliente a la vez.
+ * Tenemos una variable de condición que se encarga de esperar a que haya una petición de pago, en caso de que no haya ninguna
+ * simplemente se queda esperando. En caso de que haya una petición, se realiza el pago y se desbloquea el semáforo del cliente. 
+ *
+ * @param No requiere parametros
+ *
+ * @returns No devuelve nada
+ */
 
 void pay_system()
 {
@@ -224,6 +275,9 @@ void pay_system()
             std::cout << RED << "No payment received in 15 secs." << RESET<<std::endl;
             return;
         }
+
+        //Se hace el pago automáticamente, se bloquea el semáforo del cliente y se le añade el crédito.
+        //Por último, se saca la petición de la cola.
 
         std::cout << YELLOW <<"Paying..." << RESET<<std::endl;
         std::this_thread::sleep_for(std::chrono::seconds(1));
