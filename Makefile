@@ -18,10 +18,10 @@ manager:
 	$(CC) -o $(DIREXE)manager $(DIRSRC)manager.cpp $(CFLAGS)	
 
 test:
-	./$(DIREXE)manager Libros_P2/La-última-sirena.txt ellos 12
+	./$(DIREXE)manager
 
 solution:
-	./$(DIREXE)manager 2 3 4
+	./$(DIREXE)manager
 
 clean : 
 	rm -rf *~ core $(DIROBJ) $(DIREXE) $(DIRHEA)*~ $(DIRSRC)*~

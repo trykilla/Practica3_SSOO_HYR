@@ -1,11 +1,10 @@
 /************************************************************************************
  * Proyecto: Práctica 3 - Sistemas Operativos II                                    *
- * Nombre del programa: manager.cpp                                                 *                                                       
+ * Nombre del programa: manager.cpp                                                 *
  * Autores: Héctor Alberca Sánchez-Quintanar y Rubén Crespo Calcerrada              *
  * Fecha: 14/05/2023                                                                *
- * Propósito: Programa que crea y gestiona los hilos                                *   
+ * Propósito: Programa que crea y gestiona los hilos                                *
  ************************************************************************************/
-
 
 #include <iostream>
 #include <clients.h>
@@ -29,11 +28,11 @@ std::unordered_set<std::string> dictionary_set;
 
 int main()
 {
-    /* Se crea un diccionario al que se le añaden diversas palabras, de ahí saldrán todas las palabras 
-        aleatorias que se pueden elegir entre los clientes. 
+    /* Se crea un diccionario al que se le añaden diversas palabras, de ahí saldrán todas las palabras
+        aleatorias que se pueden elegir entre los clientes.
         A continuación se crea el hilo para el sistema de pago y los diversos clientes. */
     create_dict();
-    
+
     std::cout << MAGENTA << std::setw((80 + 30) / 2) << WELCOME << RESET << std::endl;
     std::cout << MAGENTA << LINE << RESET << std::endl;
     std::cout << MAGENTA << "Número de procesadores disponibles: " << TH_NUM << RESET << std::endl;
@@ -49,7 +48,6 @@ int main()
 
     return EXIT_SUCCESS;
 }
-
 
 /**
  * Añade en una variable global todas las palabras del archivo.
@@ -93,7 +91,6 @@ void handler(int sig)
     exit(EXIT_SUCCESS);
 }
 
-
 /**
  * Crea los hilos de los clientes.
  *
@@ -110,7 +107,6 @@ void create_client()
     {
         int type = rand() % 3;
         std::string random_word = *std::next(std::begin(dictionary_set), std::rand() % dictionary_set.size());
-
 
         v_client_threads.push_back(std::thread(create_threads, i, type, random_word));
         std::this_thread::sleep_for(std::chrono::seconds(1)); // tiempo de espera para no colapsar la terminal de clientes
