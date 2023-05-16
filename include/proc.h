@@ -36,7 +36,7 @@ void books_names();
 void searchers_wait();
 void create_request(Client client, int type, int balance, sh_request &req);
 void insert_in_queue(sh_request req, int inf_lim, int sup_lim);
-void search_for_words(FreeSearcher &searcher, Client client, std::string word);
+void search_for_words(Searcher &searcher, Client client, std::string word);
 
 std::mutex g_mtx;
 std::queue<sh_request> petitions_queue;
@@ -67,7 +67,7 @@ void create_threads(int id, int type, std::string word)
         //Se lleva a cabo la busqueda de las palabras en los libros.
         //Siempre y cuando haya menos de 4 clientes realizando busquedas. 
 
-        FreeSearcher f_searcher = FreeSearcher(id, word, type, WORDS_NUM);
+        Searcher f_searcher = Searcher(id, word, type, WORDS_NUM);
         f_searcher.credit_counter = 1;
 
         searchers_wait();
@@ -108,7 +108,7 @@ void create_threads(int id, int type, std::string word)
         searchers_wait();
 
         //Se le asigna el buscador y se le asigna el saldo que tiene el cliente.
-        FreeSearcher f_searcher = FreeSearcher(id, word, type, WORDS_NUM);
+        Searcher f_searcher = Searcher(id, word, type, WORDS_NUM);
         f_searcher.credit_counter = premium_client.get_balance();
         std::cout << YELLOW << "Searcher with id " << f_searcher.getId() << " created." << RESET << std::endl;
 
@@ -145,7 +145,7 @@ void create_threads(int id, int type, std::string word)
 
         searchers_wait();
         //Se le asigna el buscador, siempre y cuando haya menos de 4 clientes buscando.
-        FreeSearcher f_searcher = FreeSearcher(id, word, type, WORDS_NUM);
+        Searcher f_searcher = Searcher(id, word, type, WORDS_NUM);
         f_searcher.credit_counter = 0;
 
         std::cout << GREEN << "Searcher with id " << f_searcher.getId() << " created." << RESET << std::endl;
@@ -175,7 +175,7 @@ void create_threads(int id, int type, std::string word)
  * @returns No devuelve nada
  */
 
-void search_for_words(FreeSearcher &searcher, Client client, std::string word)
+void search_for_words(Searcher &searcher, Client client, std::string word)
 {
 
     for (int i = 0; i < books_names_vector.size() && searcher.word_counter < WORDS_NUM; i++)
